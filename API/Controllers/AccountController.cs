@@ -3,6 +3,7 @@ using System.Text;
 using API.Data;
 using API.DTOs;
 using API.Entities;
+using API.Extensions;
 using API.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -31,13 +32,8 @@ namespace API.Controllers
             context.Users.Add(user);
             await context.SaveChangesAsync();
 
-            return new UserDto
-            {
-                Email = user.Email,
-                DisplayName = user.DisplayName,
-                Token = tokenService.CreateToken(user),
-                Id = user.Id
-            };
+            return user.toDto(tokenService);
+           
         }
         
         [HttpPost("login")]
