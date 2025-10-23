@@ -1,5 +1,6 @@
 using API.Data;
 using API.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ namespace API.Controllers
 
     public class MembersController(AppDbContext context) : BaseAPIController
     {
+        [Authorize]
         [HttpGet] // api/members
         public async Task<ActionResult<IReadOnlyList<AppUser>>> GetMembers()
         {

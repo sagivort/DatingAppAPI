@@ -3,16 +3,17 @@ using System.Text;
 using API.Data;
 using API.DTOs;
 using API.Entities;
+using API.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
-    public class AccountController(AppDbContext context) : BaseAPIController
+    public class AccountController(AppDbContext context, ITokenService tokenService) : BaseAPIController
     {
         [HttpPost("register")]
-        public async Task<ActionResult<AppUser>> Register(RegisterDTO registerDTO)
+        public async Task<ActionResult<UserDto>> Register(RegisterDTO registerDTO)
         {
             if (await UserExists(registerDTO.Email))
             {
@@ -30,11 +31,17 @@ namespace API.Controllers
             context.Users.Add(user);
             await context.SaveChangesAsync();
 
-            return user;
+            return new UserDto
+            {
+                Email = user.Email,
+                DisplayName = user.DisplayName,
+                Token = tokenService.CreateToken(user),
+                Id = user.Id
+            };
         }
         
         [HttpPost("login")]
-        public async Task<ActionResult<AppUser>> Login(LoginDTO loginDTO)
+        public async Task<ActionResult<UserDto>> Login(LoginDTO loginDTO)
         {
             var user = await context.Users.SingleOrDefaultAsync(u => u.Email == loginDTO.Email);
             if (user == null)
@@ -52,7 +59,13 @@ namespace API.Controllers
                 }
             }
 
-            return user;
+            return new UserDto
+            {
+                Email = user.Email,
+                DisplayName = user.DisplayName,
+                Token = tokenService.CreateToken(user),
+                Id = user.Id
+            };
         }
 
         private async Task<bool> UserExists(string email)
